@@ -29,8 +29,5 @@ foreach ($user in $users) {
             -Enabled $true `
             -Path $TargetOU
 
-        Write-Host"Créé : $prenom $nom ($username)"
-    } catch {
-        Write-Host"Erreur : $prenom $nom"
     }
 }
