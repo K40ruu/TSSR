@@ -8,38 +8,35 @@ Param(
     [switch]$DryRun
 )
 
-# Charger le module AD
 Import-Module ActiveDirectory
 
-# Télécharger le fichier CSV depuis GitHub (ou autre URL)
+# Télécharger le CSV
 $TempCsvPath = "$env:TEMP\import-users.csv"
-Write-Host "[INFO] Téléchargement du fichier CSV depuis : $CsvUrl"
+Write-Host "[INFO] Téléchargement depuis : $CsvUrl"
 Invoke-WebRequest -Uri $CsvUrl -OutFile $TempCsvPath -UseBasicParsing
 
-# Importer les données depuis le CSV
+# Importer les utilisateurs
 $users = Import-Csv -Path $TempCsvPath -Delimiter ";"
 
-# Vérifier la validité des colonnes requises
-$requiredColumns = @("first_name", "last_name", "password")
+# Vérifier que les colonnes existent
+$requiredColumns = @("first_name", "last_name", "username", "password")
 foreach ($col in $requiredColumns) {
     if (-not ($users | Get-Member -Name $col)) {
-        Write-Error "[ERREUR] La colonne '$col' est manquante dans le fichier CSV. Vérifie ton fichier."
+        Write-Error "[ERREUR] La colonne '$col' est manquante dans le fichier CSV."
         exit 1
     }
 }
 
-# Initialiser les compteurs
+# Stats
 $successCount = 0
 $failCount = 0
 
-# Parcourir chaque ligne du CSV
+# Boucle principale
 foreach ($user in $users) {
     $prenom = $user.first_name
     $nom = $user.last_name
+    $username = $user.username
     $password = $user.password
-
-    # Générer automatiquement le nom d'utilisateur
-    $username = ($prenom.Substring(0,1) + $nom).ToLower()
 
     if ($DryRun) {
         Write-Host "[DRY-RUN] $prenom $nom → $username (compte non créé)" -ForegroundColor Yellow
@@ -57,10 +54,10 @@ foreach ($user in $users) {
             -Enabled $true `
             -Path $TargetOU
 
-        Write-Host "[OK] $prenom $nom ($username) créé avec succès." -ForegroundColor Green
+        Write-Host "[OK] $prenom $nom ($username) créé." -ForegroundColor Green
         $successCount++
     } catch {
-        Write-Host "[ERREUR] Impossible de créer $prenom $nom → $_" -ForegroundColor Red
+        Write-Host "[ERREUR] $prenom $nom → $_" -ForegroundColor Red
         $failCount++
     }
 }
@@ -68,4 +65,4 @@ foreach ($user in $users) {
 # Résumé
 Write-Host "`n=========== RÉSUMÉ ===========" -ForegroundColor Cyan
 Write-Host "✔️ Utilisateurs créés : $successCount" -ForegroundColor Green
-Write-Host "❌ Échecs de création : $failCount" -ForegroundColor Red
+Write-Host "❌ Échecs : $failCount" -ForegroundColor Red
