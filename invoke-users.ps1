@@ -10,15 +10,12 @@ Param(
 
 Import-Module ActiveDirectory
 
-# Télécharger le CSV
 $TempCsvPath = "$env:TEMP\import-users.csv"
 Write-Host "[INFO] Téléchargement depuis : $CsvUrl"
 Invoke-WebRequest -Uri $CsvUrl -OutFile $TempCsvPath -UseBasicParsing
 
-# Importer les utilisateurs
 $users = Import-Csv -Path $TempCsvPath -Delimiter ";"
 
-# Vérifier que les colonnes existent
 $requiredColumns = @("first_name", "last_name", "username", "password")
 foreach ($col in $requiredColumns) {
     if (-not ($users | Get-Member -Name $col)) {
@@ -27,11 +24,9 @@ foreach ($col in $requiredColumns) {
     }
 }
 
-# Stats
 $successCount = 0
 $failCount = 0
 
-# Boucle principale
 foreach ($user in $users) {
     $prenom = $user.first_name
     $nom = $user.last_name
@@ -62,7 +57,6 @@ foreach ($user in $users) {
     }
 }
 
-# Résumé
 Write-Host ""
 Write-Host "=========== RÉSUMÉ ===========" -ForegroundColor Cyan
 Write-Host "Utilisateurs créés : $successCount" -ForegroundColor Green
