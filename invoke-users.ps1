@@ -1,9 +1,12 @@
 Param(
-    [string]$CsvPath,
+    [string]$CsvUrl,
     [string]$TargetOU
 )
 
 Import-Module ActiveDirectory
+
+$CsvPath = "$env:TEMP\users.csv"
+Invoke-WebRequest -Uri $CsvUrl -OutFile $CsvPath -UseBasicParsing
 
 $users = Import-Csv -Path $CsvPath -Delimiter ";"
 
