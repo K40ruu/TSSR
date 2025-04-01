@@ -1,15 +1,10 @@
 Param(
-    [string]$CsvUrl,
+    [string]$CsvPath,
     [string]$TargetOU
 )
 
 Import-Module ActiveDirectory
 
-# Télécharger le CSV
-$CsvPath = "$env:TEMP\users.csv"
-Invoke-WebRequest -Uri $CsvUrl -OutFile $CsvPath -UseBasicParsing
-
-# Lire les données
 $users = Import-Csv -Path $CsvPath -Delimiter ";"
 
 foreach ($user in $users) {
@@ -29,5 +24,8 @@ foreach ($user in $users) {
             -Enabled $true `
             -Path $TargetOU
 
+        Write-Host "Créé : $prenom $nom ($username)"
+    } catch {
+        Write-Host "Erreur : $prenom $nom"
     }
 }
