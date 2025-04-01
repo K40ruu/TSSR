@@ -1,3 +1,4 @@
+@'
 Param(
     [Parameter(Mandatory = $true)]
     [string]$CsvUrl,
@@ -60,3 +61,4 @@ Write-Host ""
 Write-Host "=========== RÉSUMÉ ===========" -ForegroundColor Cyan
 Write-Host "Utilisateurs créés : $successCount" -ForegroundColor Green
 Write-Host "Erreurs rencontrées : $failCount" -ForegroundColor Red
+'@ | Set-Content -Path "$env:TEMP\invoke-users.ps1" -Encoding ASCII
