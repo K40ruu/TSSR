@@ -63,7 +63,7 @@ foreach ($user in $users) {
 }
 
 # Résumé
-Write-Host "`n=========== RÉSUMÉ ===========" -ForegroundColor Cyan
-Write-Host "✔️ Utilisateurs créés : $successCount" -ForegroundColor Green
-Write-Host "❌ Échecs : $failCount" -ForegroundColor Red
-
+Write-Host ""
+Write-Host "=========== RÉSUMÉ ===========" -ForegroundColor Cyan
+Write-Host "Utilisateurs créés : $successCount" -ForegroundColor Green
+Write-Host "Erreurs rencontrées : $failCount" -ForegroundColor Red
