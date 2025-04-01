@@ -1,27 +1,71 @@
+Param(
+    [Parameter(Mandatory = $true)]
+    [string]$CsvUrl,
+
+    [Parameter(Mandatory = $true)]
+    [string]$TargetOU,
+
+    [switch]$DryRun
+)
+
+# Charger le module AD
 Import-Module ActiveDirectory
 
-# Spécifiez le chemin du fichier CSV contenant les utilisateurs
-$csvFile = "C:\chemin\vers\votre\fichier.csv"
+# Télécharger le fichier CSV depuis GitHub (ou autre URL)
+$TempCsvPath = "$env:TEMP\import-users.csv"
+Write-Host "[INFO] Téléchargement du fichier CSV depuis : $CsvUrl"
+Invoke-WebRequest -Uri $CsvUrl -OutFile $TempCsvPath -UseBasicParsing
 
-# Spécifiez le chemin complet de l'unité d'organisation (OU) dans laquelle vous voulez créer les utilisateurs
-$ouPath = "OU=entreprise,DC=inwaves,DC=lan"
+# Importer les données depuis le CSV
+$users = Import-Csv -Path $TempCsvPath -Delimiter ";"
 
-# Spécifiez le nom de domaine du contrôleur de domaine (DC) sur lequel vous souhaitez créer les utilisateurs
-$domainController = "inwaves.lan"
-
-# Importez les données du fichier CSV en spécifiant le délimiteur de point-virgule
-$users = Import-Csv $csvFile -Delimiter ";"
-
-# Parcourez chaque utilisateur dans la liste et créez-les dans Active Directory
-foreach ($user in $users) {
-    # Définissez les attributs de l'utilisateur à partir des données du fichier CSV
-    $nom = $user.Nom
-    $prenom = $user.Prenom
-    $username = $user.UserName
-    $password = $user.Password
-
-    # Créez le compte utilisateur dans Active Directory en spécifiant le chemin et le contrôleur de domaine
-    New-ADUser -Name "$prenom $nom" -SamAccountName $username -GivenName $prenom -Surname $nom `
-    -UserPrincipalName $username -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) `
-    -Enabled $true -Path $ouPath -Server $domainController
+# Vérifier la validité des colonnes requises
+$requiredColumns = @("first_name", "last_name", "password")
+foreach ($col in $requiredColumns) {
+    if (-not ($users | Get-Member -Name $col)) {
+        Write-Error "[ERREUR] La colonne '$col' est manquante dans le fichier CSV. Vérifie ton fichier."
+        exit 1
+    }
 }
+
+# Initialiser les compteurs
+$successCount = 0
+$failCount = 0
+
+# Parcourir chaque ligne du CSV
+foreach ($user in $users) {
+    $prenom = $user.first_name
+    $nom = $user.last_name
+    $password = $user.password
+
+    # Générer automatiquement le nom d'utilisateur
+    $username = ($prenom.Substring(0,1) + $nom).ToLower()
+
+    if ($DryRun) {
+        Write-Host "[DRY-RUN] $prenom $nom → $username (compte non créé)" -ForegroundColor Yellow
+        continue
+    }
+
+    try {
+        New-ADUser `
+            -Name "$prenom $nom" `
+            -SamAccountName $username `
+            -GivenName $prenom `
+            -Surname $nom `
+            -UserPrincipalName "$username@$(($env:USERDNSDOMAIN -replace '\.$',''))" `
+            -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) `
+            -Enabled $true `
+            -Path $TargetOU
+
+        Write-Host "[OK] $prenom $nom ($username) créé avec succès." -ForegroundColor Green
+        $successCount++
+    } catch {
+        Write-Host "[ERREUR] Impossible de créer $prenom $nom → $_" -ForegroundColor Red
+        $failCount++
+    }
+}
+
+# Résumé
+Write-Host "`n=========== RÉSUMÉ ===========" -ForegroundColor Cyan
+Write-Host "✔️ Utilisateurs créés : $successCount" -ForegroundColor Green
+Write-Host "❌ Échecs de création : $failCount" -ForegroundColor Red
