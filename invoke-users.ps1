@@ -26,9 +26,8 @@ foreach ($user in $users) {
             -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) `
             -Enabled $true `
             -Path $TargetOU
-
-        Write-Host "Créé : $prenom $nom ($username)"
-    } catch {
+    }
+    catch {
         Write-Host "Erreur : $prenom $nom"
     }
 }
