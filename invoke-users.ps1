@@ -28,6 +28,6 @@ foreach ($user in $users) {
             -Path $TargetOU
     }
     catch {
-        Write-Host "Erreur : $prenom $nom"
+        Write-Host "Erreur : $prenom $nom → $($_.Exception.Message)" -ForegroundColor Red
     }
 }
