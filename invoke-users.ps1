@@ -11,7 +11,6 @@ Param(
 Import-Module ActiveDirectory
 
 $TempCsvPath = "$env:TEMP\import-users.csv"
-Write-Host "[INFO] Téléchargement depuis : $CsvUrl"
 Invoke-WebRequest -Uri $CsvUrl -OutFile $TempCsvPath -UseBasicParsing
 
 $users = Import-Csv -Path $TempCsvPath -Delimiter ";"
@@ -19,7 +18,7 @@ $users = Import-Csv -Path $TempCsvPath -Delimiter ";"
 $requiredColumns = @("first_name", "last_name", "username", "password")
 foreach ($col in $requiredColumns) {
     if (-not ($users | Get-Member -Name $col)) {
-        Write-Error "[ERREUR] La colonne '$col' est manquante dans le fichier CSV."
+        Write-Error "Colonne '$col' manquante dans le CSV."
         exit 1
     }
 }
