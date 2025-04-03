@@ -12,15 +12,6 @@ Ce dépôt utilise **plusieurs branches** pour organiser les projets par thème 
 
 ---
 
-## 🧭 Comment naviguer dans le dépôt
-
-1. Clique sur le bouton `<> Code`
-2. Ouvre le menu déroulant des branches (en haut à gauche du fichier)
-3. Sélectionne la branche du projet que tu veux consulter
-
----
-
-
 ## 👤 Auteur
 
 - **K40ruu**
