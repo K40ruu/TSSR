@@ -7,9 +7,7 @@ Script PowerShell pour l'import automatisé d'utilisateurs dans Active Directory
 ## 🚀 Fonctionnalités
 
 - Import automatique d'utilisateurs depuis un CSV
-- Prend en charge plusieurs OU (USERS / ADMINS)
-- Compatible avec les domaines Active Directory
-
+- 
 ---
 
 ## 📂 Structure du dépôt
